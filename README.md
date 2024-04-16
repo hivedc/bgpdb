@@ -19,7 +19,9 @@ pip install -r requirements.txt
 ```
 
 Copy content of secrets.example.json and make a file called secrets.json with your database information
-```
-pip install -r requirements.txt
-```
 
+
+Run update.py on as a cronjob
+```
+0 0 1 */1 * /usr/bin/python3 /home/bgpdb/bgpdbUpdate.py
+```
