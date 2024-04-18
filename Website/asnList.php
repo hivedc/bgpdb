@@ -32,19 +32,18 @@ $db = new DBManager();
     <br>
     <div class="container">
         <h5>Last Updated: <?php echo ($updateDate['UPDATE_TIME']); ?></h5>
-        <!-- TODO -->
-        <!-- MAKE UPDATE DATE DYNAMIC -->
+
         <div class="table-responsive">
-            <table class="table" id="table">
+            <table class="table" id="table" data-toggle="table">
                 <thead>
                     <tr>
-                        <th scope="col">ASN</th>
-                        <th scope="col">OrgID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">ASN Date</th>
-                        <th scope="col">Org Date</th>
-                        <th scope="col">City</th>
+                        <th scope="col" data-sortable="true">ASN</th>
+                        <th scope="col" data-sortable="true">OrgID</th>
+                        <th scope="col" data-sortable="true">Name</th>
+                        <th scope="col" data-sortable="true">Status</th>
+                        <th scope="col" data-sortable="true">ASN Date</th>
+                        <th scope="col" data-sortable="true">Org Date</th>
+                        <th scope="col" data-sortable="true">City</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -56,7 +55,19 @@ $db = new DBManager();
                             <th scope="row"><?php echo $asns[$i]['asn'] ?></th>
                             <td><?php echo $asns[$i]['org_id'] ?></td>
                             <td><?php echo $asns[$i]['name'] ?></td>
-                            <td><?php echo $asns[$i]['status'] ?></td>
+                            <td>
+                                <?php
+
+                                if ($asns[$i]['status'] === 1) {
+                                    echo ('<span class="badge text-bg-success">Active</span>');
+                                } elseif ($asns[$i]['status'] === 0) {
+                                    echo ('<span class="badge text-bg-danger">Inactive</span>');
+                                } else {
+                                    echo "";
+                                }
+
+                                ?>
+                            </td>
                             <td><?php echo $asns[$i]['asn_date'] ?></td>
                             <td><?php echo $asns[$i]['org_date'] ?></td>
                             <td><?php echo $asns[$i]['city'] . ', ' . $asns[$i]['province'] ?></td>
@@ -67,6 +78,7 @@ $db = new DBManager();
             </table>
         </div>
     </div>
+    <br>
 
     <?php
     include_once "footer.php";

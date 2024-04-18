@@ -4,9 +4,11 @@ import sys
 import time
 import datetime
 import json
+import mmap
 
 ARIN_ASN_API_URL = "http://whois.arin.net/rest/asn/"
 ARIN_ORG_API_URL = "http://whois.arin.net/rest/org/"
+BGPTOOLS_PREFIX_JSON_URL = "https://bgp.tools/table.jsonl"
 
 secretsData = json.load(open("secrets.json", "r"))
 
@@ -16,6 +18,8 @@ DB_USER = secretsData["user"]
 DB_PASSWORD = secretsData["password"]
 DB_DATABASE = secretsData["database"]
 
+TEMP_DIR = "Update/temp/"
+BGPTOOLS_USER_AGENT = secretsData["bgpToolsContactInfo"]
 
 def db_conn():
 
@@ -58,7 +62,7 @@ def getAsData(asn):
 
         req2 = requests.get(ARIN_ORG_API_URL + data["org_id"], headers=header).json()
 
-        if "org_date" not in req2["org"]:
+        if "registrationDate" not in req2["org"]:
             data["org_date"] = None
         else:
             data["org_date"] = datetime.datetime.fromisoformat(
@@ -94,8 +98,29 @@ def insertToDb(mydb, cursor, asnList):
     mydb.commit()
 
 
+def downloadPrefixList():
+    try:
+        # Download new prefix list
+        header = {"User-Agent": BGPTOOLS_USER_AGENT}
+        req = requests.get(BGPTOOLS_PREFIX_JSON_URL, headers=header)
+        open(TEMP_DIR + "prefixList.jsonl", "wb").write(req.content)
+    except Exception as e:
+        print(f"Error downloading file: {e}")
+
+
+def checkIfAsnIsActive(asn):
+    with open(TEMP_DIR + "prefixList.jsonl") as f:
+        s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        str = '"ASN":' + asn + ","
+        if s.find(bytes(str, 'utf-8')) != -1:
+            return True
+        else:
+            return False
+
+
 def main():
     mydb, cursor = db_conn()
+    downloadPrefixList()
 
     # SQL bulk insert
     # How many asns are stored before inserting to the database
@@ -103,16 +128,18 @@ def main():
 
     asnList = []
 
-    for i in range(0, 64495):
+    for i in range(55, 64495):
         data = getAsData(i)
 
         if data != "Invalid ASN" and data["country"] == "CA":
+
+            status = checkIfAsnIsActive(str(data["asn"]))
 
             val = (
                 int(data["asn"]),
                 data["org_id"],
                 data["name"],
-                None,  # TODO STATUS
+                status,
                 data["asn_date"],
                 data["org_date"],
                 data["province"],
@@ -136,11 +163,13 @@ def main():
 
         if data != "Invalid ASN" and data["country"] == "CA":
 
+            status = checkIfAsnIsActive(str(data["asn"]))
+
             val = (
                 int(data["asn"]),
                 data["org_id"],
                 data["name"],
-                None,  # TODO STATUS
+                status,
                 data["asn_date"],
                 data["org_date"],
                 data["province"],

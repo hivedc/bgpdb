@@ -1,5 +1,6 @@
 asn.txt
 secrets.json
+prefixList.jsonl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
