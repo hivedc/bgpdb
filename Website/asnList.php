@@ -52,8 +52,8 @@ $db = new DBManager();
 
                     <?php for ($i = 0; $i < count($asns); $i++) { ?>
                         <tr>
-                            <th scope="row"><?php echo $asns[$i]['asn'] ?></th>
-                            <td><?php echo $asns[$i]['org_id'] ?></td>
+                            <th scope="row"><a href="https://bgp.tools/as/<?php echo $asns[$i]['asn'] ?>" target="_blank"><?php echo $asns[$i]['asn'] ?></a></th>
+                            <td><a href="https://whois.arin.net/rest/org/<?php echo $asns[$i]['org_id'] ?>" target="_blank"><?php echo $asns[$i]['org_id'] ?></a></td>
                             <td><?php echo $asns[$i]['name'] ?></td>
                             <td>
                                 <?php
